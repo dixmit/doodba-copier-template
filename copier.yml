@@ -255,6 +255,12 @@ domains_prod:
     - hosts:
         - vpn.main.com
       cert_resolver: true
+
+    # Extra middlewares
+    - hosts:
+        - www.main.com
+        middlewares:
+          - custom-header@file
   help: |
     Configure the production domains for this project.
 

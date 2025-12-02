@@ -57,9 +57,17 @@
       traefik.http.routers.{{ key }}-{{ suffix }}-{{ domain_group.loop.index0 }}.entrypoints:
         {{ domain_group.entrypoints|sort|join(", ") }}
       {%- endif %}
-      {%- if middlewares %}
+
+      {%- if middlewares or domain_group.middleware %}
+      {%- set prefixed = middlewares | default([]) | map('regex_replace', '^(.*)$', key ~ '-\\1') | list -%}
+      {%- set part1 = prefixed | join(', ') -%}
+      {%- set part2 = domain_group.middlewares | default([]) | sort | join(', ') -%}
       traefik.http.routers.{{ key }}-{{ suffix }}-{{ domain_group.loop.index0 }}.middlewares:
-        {{ key }}-{{ middlewares|sort|join(", %s-" % key) }}
+        {%- if part1 and part2 -%}
+        {{ part1 }}, {{ part2 }}
+        {%- else -%}
+        {{ part1 or part2 }}
+        {%- endif -%}
       {%- endif %}
 
       {%- if priority %}
@@ -229,10 +237,19 @@
       traefik.tcp.routers.{{ key }}-{{ suffix }}-{{ domain_group.loop.index0 }}.entrypoints:
         {{ domain_group.entrypoints|sort|join(", ") }}
       {%- endif %}
-      {%- if middlewares %}
+
+      {%- if middlewares or domain_group.middleware %}
+      {%- set prefixed = middlewares | default([]) | map('regex_replace', '^(.*)$', key ~ '-\\1') | list -%}
+      {%- set part1 = prefixed | join(', ') -%}
+      {%- set part2 = domain_group.middlewares | default([]) | sort | join(', ') -%}
       traefik.tcp.routers.{{ key }}-{{ suffix }}-{{ domain_group.loop.index0 }}.middlewares:
-        {{ key }}-{{ middlewares|sort|join(", %s-" % key) }}
+        {%- if part1 and part2 -%}
+        {{ part1 }}, {{ part2 }}
+        {%- else -%}
+        {{ part1 or part2 }}
+        {%- endif -%}
       {%- endif %}
+
 {%- endmacro %}
 
 {%- macro database(domain_groups_list, cidr_whitelist, key, port, project_name) %}
